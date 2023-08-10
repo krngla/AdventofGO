@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.krngla/AdventofGO/meta"
+	"github.com/krngla/AdventofGO/meta"
 	"fmt"
 )
 

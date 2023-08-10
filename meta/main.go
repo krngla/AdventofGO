@@ -1,4 +1,4 @@
-package github.com/krngla/AdventofGO/meta
+package AdventofGO/meta
 
 import (
 	"errors"
