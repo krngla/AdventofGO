@@ -1,6 +1,5 @@
 package meta
 
-
 import (
 	"errors"
 	"io/ioutil"
