@@ -1,3 +1,3 @@
-module projects/adventofcode/go/meta
+module github.com/krngla/AdventofGO/meta
 
 go 1.20
