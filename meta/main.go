@@ -1,4 +1,4 @@
-package AdventofGO/meta
+package meta
 
 import (
 	"errors"
