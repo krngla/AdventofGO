@@ -1,4 +1,4 @@
-module projects/adventofcode/go
+module projects/adventofcode/aocdisp
 
 go 1.20
 
