@@ -9,8 +9,7 @@ import (
 )
 
 var testans int = 24000
-var teststr string = `
-1000
+var teststr string = `1000
 
 2000
 3000
