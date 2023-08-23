@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/krngla/goutil/stack"
+	"log"
 	"os"
-
+	"strconv"
 	"strings"
 )
 
@@ -32,6 +33,15 @@ move 1 from 1 to 2
 //repeat until EOF then pop top of each stack and concatenate to string in
 //order
 
+type appError struct {
+	message string
+	context string
+}
+
+func (e *appError) Error() string {
+	return fmt.Sprintf("%s (%s)", e.message, e.context)
+}
+
 type operation struct {
 	n    int
 	from int
@@ -41,13 +51,12 @@ type operation struct {
 type inputcase struct {
 	Columns []stack.Stack
 	Ncol    int
-	Ops     []operation
 }
 
 func (ic *inputcase) insertElement(e string, i int) string {
 	//TODO: implement insertElement
 	//fmt.Printf("Inserting %s into column %d\n", e, i)
-	e = strings.Trim(e, " ]")
+	e = strings.Trim(e, "[ ]")
 	idiff := i - ic.Ncol + 1
 	if idiff > 0 {
 		//append ic.Ncol - i stacks to ic.Columns and update ic.Ncol
@@ -58,6 +67,23 @@ func (ic *inputcase) insertElement(e string, i int) string {
 	}
 	ic.Columns[i].Push(e)
 	return e
+}
+
+func (ic *inputcase) moveElements(n, from, to int) error {
+	if to > ic.Ncol || from > ic.Ncol {
+		return &appError{
+			message: "out of range, trying to access column that does not exist",
+			context: fmt.Sprintf("n: %d, from: %d, to: %d", n, from, to),
+		}
+	}
+	for i := 0; i < n; i++ {
+		element, err := ic.Columns[from-1].Pop()
+		if err != nil {
+			fmt.Println(err)
+		}
+		ic.Columns[to-1].Push(element)
+	}
+	return nil
 }
 
 func (o inputcase) Ser() []byte {
@@ -80,10 +106,6 @@ func (ic *inputcase) Print() string {
 	for _, col := range ic.Columns {
 		s += string(col.Print()) + ","
 	}
-	for _, op := range ic.Ops {
-		s += fmt.Sprintf("%d-%d-%d,\n", op.n, op.from, op.to)
-	}
-
 	return s
 }
 
@@ -91,7 +113,6 @@ func ParseInput(i *bufio.Scanner) inputcase {
 	ic := inputcase{
 		Columns: make([]stack.Stack, 1),
 		Ncol:    1,
-		Ops:     make([]operation, 0),
 	}
 	for i.Scan() {
 		line := i.Text()
@@ -121,9 +142,34 @@ func ParseInput(i *bufio.Scanner) inputcase {
 			ic.insertElement(e, currcol)
 		}
 	}
+	fmt.Println(string(ic.Ser()))
 	for i.Scan() {
 		line := i.Text()
-		fmt.Println(line)
+		//move 1 from 2 to 1
+		if line == "" {
+			continue
+		}
+		fields := strings.Fields(line)
+
+		n, err := strconv.Atoi(fields[1])
+		if err != nil {
+			log.Fatalf("Bad input:'%s'", line)
+		}
+		from, err := strconv.Atoi(fields[3])
+		if err != nil {
+			log.Fatalf("Bad input:'%s'", line)
+		}
+		to, err := strconv.Atoi(fields[5])
+		if err != nil {
+			log.Fatalf("Bad input:'%s'", line)
+		}
+		err = ic.moveElements(n, from, to)
+		if err != nil {
+			log.Fatalf("Failed to move elements:'%v', (%v)", err, ic)
+		}
+
+		fmt.Println(fields)
+
 	}
 	return ic
 }
